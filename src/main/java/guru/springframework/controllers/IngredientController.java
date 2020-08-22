@@ -62,7 +62,7 @@ public class IngredientController {
   @GetMapping("/recipe/{recipeId}/ingredient/new")
   public String newRecipe(Model model, @PathVariable String recipeId) {
     
-    RecipeCommand command = recipeService.findCommandById(recipeId);`
+    RecipeCommand command = recipeService.findCommandById(recipeId);
     //todo Raise exception if null
     
     IngredientCommand ingredientCommand = new IngredientCommand();
