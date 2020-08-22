@@ -1,58 +1,60 @@
 package guru.springframework.services;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
-
-import java.util.HashSet;
-import java.util.Set;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import guru.springframework.commands.UnitOfMeasureCommand;
 import guru.springframework.converters.UnitOfMeasureToUnitOfMeasureCommand;
 import guru.springframework.domain.UnitOfMeasure;
-import guru.springframework.repositories.UnitOfMeasureRepository;
+import guru.springframework.repositories.reactive.UnitOfMeasureReactiveRepository;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import reactor.core.publisher.Flux;
 
 public class UnitOfMeasureServiceImplTest {
-	
-	UnitOfMeasureService service;
-	UnitOfMeasureToUnitOfMeasureCommand uomToUomCommand = new UnitOfMeasureToUnitOfMeasureCommand();
-	
-	@Mock
-	UnitOfMeasureRepository uomRepository;
-
-	@Before
-	public void setUp() throws Exception {
-		MockitoAnnotations.initMocks(this);
-		
-		service = new UnitOfMeasureServiceImpl(uomRepository, uomToUomCommand);
-	}
-
-	@Test
-	public void testFindAll() {
-		//Given
-		Set<UnitOfMeasure> uomSet = new HashSet<UnitOfMeasure>();
-		UnitOfMeasure uom1 = new UnitOfMeasure();
-		uom1.setId("1");
-		uomSet.add(uom1);
-		
-		UnitOfMeasure uom2 = new UnitOfMeasure();
-		uom2.setId("2");
-		uomSet.add(uom2);
-		
-		when(uomRepository.findAll()).thenReturn(uomSet);
-		
-		//When
-		Set<UnitOfMeasureCommand> uomCommandSet = service.findAll();
-		
-		//Then
-		assertNotNull(uomCommandSet);
-		assertEquals(uomSet.size(), uomCommandSet.size());
-		
-		verify(uomRepository, times(1)).findAll();
-	}
-
+  
+  UnitOfMeasureService service;
+  UnitOfMeasureToUnitOfMeasureCommand uomToUomCommand = new UnitOfMeasureToUnitOfMeasureCommand();
+  
+  @Mock
+  UnitOfMeasureReactiveRepository uomRepository;
+  
+  @Before
+  public void setUp() throws Exception {
+    MockitoAnnotations.initMocks(this);
+    service = new UnitOfMeasureServiceImpl(uomRepository, uomToUomCommand);
+  }
+  
+  @Test
+  public void testFindAll() {
+    //Given
+    Set<UnitOfMeasure> unitOfMeasures = new HashSet<UnitOfMeasure>();
+    UnitOfMeasure uom1 = new UnitOfMeasure();
+    uom1.setId("1");
+    unitOfMeasures.add(uom1);
+    
+    UnitOfMeasure uom2 = new UnitOfMeasure();
+    uom2.setId("2");
+    unitOfMeasures.add(uom2);
+    
+    when(uomRepository.findAll()).thenReturn(Flux.just(uom1, uom2));
+    
+    //When
+    List<UnitOfMeasureCommand> uomCommandSet = service.findAll().collectList().block();
+    
+    //Then
+    assertNotNull(uomCommandSet);
+    assertEquals(unitOfMeasures.size(), uomCommandSet.size());
+    
+    verify(uomRepository, times(1)).findAll();
+  }
+  
 }

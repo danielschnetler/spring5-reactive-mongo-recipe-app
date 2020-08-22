@@ -1,10 +1,8 @@
 package guru.springframework.services;
 
-import java.util.Set;
-
 import guru.springframework.commands.UnitOfMeasureCommand;
+import reactor.core.publisher.Flux;
 
 public interface UnitOfMeasureService {
-	Set<UnitOfMeasureCommand> findAll();
-
+  Flux<UnitOfMeasureCommand> findAll();  
 }
