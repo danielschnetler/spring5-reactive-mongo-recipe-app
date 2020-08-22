@@ -1,98 +1,104 @@
 package guru.springframework.services;
 
-import static org.junit.Assert.*;
-
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import guru.springframework.converters.RecipeCommandToRecipe;
 import guru.springframework.converters.RecipeToRecipeCommand;
 import guru.springframework.domain.Recipe;
 import guru.springframework.exceptions.NotFoundException;
-import guru.springframework.repositories.RecipeRepository;
-
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.*;
+import guru.springframework.repositories.reactive.RecipeReactiveRepository;
+import java.util.List;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.mockito.verification.VerificationMode;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 public class RecipeServiceImplTest {
 
-	RecipeServiceImpl recipeService;
+  RecipeServiceImpl recipeService;
 
-	@Mock
-	RecipeRepository recipeRepository;
+  @Mock
+  RecipeReactiveRepository recipeRepository;
 
-	@Mock
-	RecipeToRecipeCommand recipeToRecipeCommand;
+  @Mock
+  RecipeToRecipeCommand recipeToRecipeCommand;
 
-	@Mock
-	RecipeCommandToRecipe recipeCommandToRecipe;
+  @Mock
+  RecipeCommandToRecipe recipeCommandToRecipe;
 
-	@Before
-	public void setUp() throws Exception {
-		MockitoAnnotations.initMocks(this);
+  @Before
+  public void setUp() throws Exception {
+    MockitoAnnotations.initMocks(this);
 
-		recipeService = new RecipeServiceImpl(recipeRepository, recipeCommandToRecipe, recipeToRecipeCommand);
-	}
+    recipeService = new RecipeServiceImpl(recipeRepository, 
+        recipeCommandToRecipe, recipeToRecipeCommand);
+  }
 
-	@Test
-	public void getRecipeByIdTest() {
-		Recipe recipe = new Recipe();
-		recipe.setId("1");
+  @Test
+  public void getRecipeByIdTest() {
+    Recipe recipe = new Recipe();
+    recipe.setId("1");
+    Mono<Recipe> monoRecipe = Mono.just(recipe);
 
-		when(recipeRepository.findById(anyString())).thenReturn(Optional.of(recipe));
+    when(recipeRepository.findById(anyString())).thenReturn(monoRecipe);
 
-		Recipe returnedRecipe = recipeService.findById("1");
+    Recipe returnedRecipe = recipeService.findById("1");
 
-		assertNotNull(returnedRecipe);
-		verify(recipeRepository, times(1)).findById(anyString());
-		verify(recipeRepository, never()).findAll();
+    assertNotNull(returnedRecipe);
+    verify(recipeRepository, times(1)).findById(anyString());
+    verify(recipeRepository, never()).findAll();
 
-	}
-	
-	@Test(expected = NotFoundException.class)
-	public void getRecipeByIdTestNotFount() {
-		
-		Optional<Recipe> recipeOptional = Optional.empty();
-		
-		when(recipeRepository.findById(anyString())).thenReturn(recipeOptional);
-		Recipe recipeReturned =  recipeService.findById("1");
+  }
 
-		//Then
-		assertNull(recipeReturned);
-	}
+  private VerificationMode times(int i) {
+    return null;
+  }
 
-	@Test
-	public void testGetRecipes() {
-
-		Recipe recipe = new Recipe();
-		HashSet<Recipe> recipesData = new HashSet<Recipe>();
-		recipesData.add(recipe);
-
-		when(recipeRepository.findAll()).thenReturn(recipesData);
-
-		Set<Recipe> recipes = recipeService.getRecipes();
-
-		assertEquals(1, recipes.size());
-
-		verify(recipeRepository, times(1)).findAll();
-	}
-	
-	@Test
-	public void testDeleteRecipe() {
-		//Given
-		String recipeId = "2";
-		
-		//when
-		recipeService.deleteById(recipeId);
-		
-		verify(recipeRepository, times(1)).deleteById(anyString());
-	}
-
+  @Test(expected = NotFoundException.class)
+  public void getRecipeByIdTestNotFount() {
+    
+    Mono<Recipe> monoRecipe = Mono.empty();
+    
+    when(recipeRepository.findById(anyString())).thenReturn(monoRecipe);
+    Recipe recipeReturned =  recipeService.findById("1");
+    
+    //Then
+    assertNull(recipeReturned);
+  }
+  
+  @Test
+  public void testGetRecipes() {
+    
+    Recipe recipe = new Recipe();
+    Flux<Recipe> recipesData = Flux.just(recipe);
+        
+    when(recipeRepository.findAll()).thenReturn(recipesData);
+    
+    List<Recipe> recipes = recipeService.getRecipes().collectList().block();
+    
+    assertEquals(1, recipes.size());
+    
+    verify(recipeRepository, times(1)).findAll();
+  }
+  
+  @Test
+  public void testDeleteRecipe() {
+    //Given
+    String recipeId = "2";
+    
+    //when
+    recipeService.deleteById(recipeId);
+    
+    verify(recipeRepository, times(1)).deleteById(anyString());
+  }
+  
 }

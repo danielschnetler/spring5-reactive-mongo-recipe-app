@@ -1,20 +1,19 @@
 package guru.springframework.services;
 
-import java.util.Set;
-
 import guru.springframework.commands.RecipeCommand;
 import guru.springframework.domain.Recipe;
+import reactor.core.publisher.Flux;
 
 public interface RecipeService {
-	
-	Set<Recipe> getRecipes();
-	
-	Recipe findById(String id);
-	
-	RecipeCommand saveRecipeCommand(RecipeCommand command);
-	
-	RecipeCommand findCommandById(String id);
-	
-	void deleteById(String id);
-
+  
+  Flux<Recipe> getRecipes();
+  
+  Recipe findById(String id);
+  
+  RecipeCommand saveRecipeCommand(RecipeCommand command);
+  
+  RecipeCommand findCommandById(String id);
+  
+  void deleteById(String id);
+  
 }
