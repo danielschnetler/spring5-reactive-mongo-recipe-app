@@ -1,5 +1,6 @@
 package guru.springframework.repositories.reactive;
 
+import static org.junit.Assert.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import guru.springframework.domain.Category;
@@ -29,14 +30,37 @@ public class ReactiveRepositoryIT {
   IngredientReactiveRepository ingredientReactiveRepository;
 
   @Before public void setUp() {
-    categoryReactiveRepository.deleteAll();
-    recipeReactiveRepository.deleteAll();
-    unitOfMeasureReactiveRepository.deleteAll();
-    ingredientReactiveRepository.deleteAll();
+    categoryReactiveRepository.deleteAll().block();
+    recipeReactiveRepository.deleteAll().block();
+    unitOfMeasureReactiveRepository.deleteAll().block();
+    ingredientReactiveRepository.deleteAll().block();
   }
 
   @Test public void testSaveRecipe() {
 
+    Recipe newRecipe = createRecipe();
+    
+    Recipe savedRecipe = recipeReactiveRepository.save(newRecipe).block();
+
+    assertEquals(newRecipe.getCategories().size(), savedRecipe.getCategories().size());
+    assertEquals(newRecipe.getIngredients().size(), savedRecipe.getIngredients().size());
+    assertEquals(newRecipe.getDescription(), savedRecipe.getDescription());
+
+    assertEquals(Long.valueOf(1L), recipeReactiveRepository.count().block());
+  }
+
+  @Test public void testFindById() throws Exception {
+    Recipe recipe = createRecipe();
+
+    Recipe savedRecipe = recipeReactiveRepository.save(recipe).block();
+
+    Recipe foundRecipe = recipeReactiveRepository.findById(savedRecipe.getId()).block();
+
+    assertNotNull(foundRecipe.getId());
+  }
+
+
+  private Recipe createRecipe() {
     UnitOfMeasure unitOfMeasure = new UnitOfMeasure();
     unitOfMeasure.setDescription("Cup");
     unitOfMeasure.setId("1");
@@ -62,15 +86,8 @@ public class ReactiveRepositoryIT {
     newRecipe.setDifficulty(Difficulty.EASY);
     newRecipe.setServings(3);
     newRecipe.setDirections("Cook some pasta and add tomato");
-    
-    Mono<Recipe> savedMonoRecipe = recipeReactiveRepository.save(newRecipe);
-    Recipe savedRecipe = savedMonoRecipe.block();
-
-    assertEquals(newRecipe.getCategories().size(), savedRecipe.getCategories().size());
-    assertEquals(newRecipe.getIngredients().size(), savedRecipe.getIngredients().size());
-    assertEquals(newRecipe.getDescription(), savedRecipe.getDescription());
-
-    assertEquals(Long.valueOf(1L), recipeReactiveRepository.count().block());
+    return newRecipe;
   }
+
 
 }

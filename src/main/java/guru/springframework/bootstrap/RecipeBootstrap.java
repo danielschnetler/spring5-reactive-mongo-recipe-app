@@ -10,13 +10,13 @@ import guru.springframework.repositories.reactive.CategoryReactiveRepository;
 import guru.springframework.repositories.reactive.RecipeReactiveRepository;
 import guru.springframework.repositories.reactive.UnitOfMeasureReactiveRepository;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 @Slf4j
 @Component
@@ -43,64 +43,68 @@ public class RecipeBootstrap implements ApplicationListener<ContextRefreshedEven
   
     loadCategories();
     loadUom();
-    recipeRepository.saveAll(getRecipes());
+    recipeRepository.saveAll(getRecipes()).blockLast();
+
+    log.debug("############ UOM Count " + uomRepository.count().block().toString());
+    log.debug("############ Category Count " + categoryRepository.count().block().toString());
+    log.debug("############ Recipe Count " + recipeRepository.count().block().toString());
   }
   
   private void loadUom() {
     UnitOfMeasure uom1 = new UnitOfMeasure();
     uom1.setDescription("Teaspoon");
-    uomRepository.save(uom1);
+    uomRepository.save(uom1).block();
     
     UnitOfMeasure uom2 = new UnitOfMeasure();
     uom2.setDescription("Tablespoon");
-    uomRepository.save(uom2);
+    uomRepository.save(uom2).block();
     
     UnitOfMeasure uom3 = new UnitOfMeasure();
     uom3.setDescription("Cup");
-    uomRepository.save(uom3);
+    uomRepository.save(uom3).block();
     
     UnitOfMeasure uom4 = new UnitOfMeasure();
     uom4.setDescription("Pinch");
-    uomRepository.save(uom4);
+    uomRepository.save(uom4).block();
     
     UnitOfMeasure uom5 = new UnitOfMeasure();
     uom5.setDescription("Ounce");
-    uomRepository.save(uom5);
+    uomRepository.save(uom5).block();
     
     UnitOfMeasure uom6 = new UnitOfMeasure();
     uom6.setDescription("Each");
-    uomRepository.save(uom6);
+    uomRepository.save(uom6).block();
     
     UnitOfMeasure uom7 = new UnitOfMeasure();
     uom7.setDescription("Pint");
-    uomRepository.save(uom7);
+    uomRepository.save(uom7).block();
     
     UnitOfMeasure uom8 = new UnitOfMeasure();
     uom8.setDescription("Dash");
-    uomRepository.save(uom8);
+    uomRepository.save(uom8).block();
     
   }
   
   private void loadCategories() {
     Category cat1 = new Category();
     cat1.setDescription("American");
-    categoryRepository.save(cat1);
+    categoryRepository.save(cat1).block();
     
     Category cat2 = new Category();
     cat2.setDescription("Italian");
-    categoryRepository.save(cat2);
+    categoryRepository.save(cat2).block();
     
     Category cat3 = new Category();
     cat3.setDescription("Mexican");
-    categoryRepository.save(cat3);
+    categoryRepository.save(cat3).block();
     
     Category cat4 = new Category();
     cat4.setDescription("Fast Food");
-    categoryRepository.save(cat4);
+    categoryRepository.save(cat4).block();
     
   }
   
-  private List<Recipe> getRecipes() {
+  private Flux<Recipe> getRecipes() {
     //UnitOfMeasure pinchUom = uomRepository.findByDescription("Pinch").block();
     //UnitOfMeasure ounceUom = uomRepository.findByDescription("Ounce").block();
     //Category italianCategory = categoryRepository.findByDescription("Italian").block();    
@@ -186,9 +190,6 @@ public class RecipeBootstrap implements ApplicationListener<ContextRefreshedEven
     guacamoleRecipe.getCategories().add(americanCategory);
     guacamoleRecipe.getCategories().add(mexicanCategory);
     
-    List<Recipe> recipies = new ArrayList<>(2);
-    recipies.add(guacamoleRecipe);
-    
     //Yummy Tacos
     Recipe tacosRecipe = new Recipe();
     tacosRecipe.setDescription("Spicy Grilled Chicken Taco");
@@ -272,9 +273,8 @@ public class RecipeBootstrap implements ApplicationListener<ContextRefreshedEven
     
     tacosRecipe.getCategories().add(americanCategory);
     tacosRecipe.getCategories().add(mexicanCategory);
-    
-    recipies.add(tacosRecipe);
-    return recipies;
+
+    return Flux.just(guacamoleRecipe, tacosRecipe);
   }
   
   

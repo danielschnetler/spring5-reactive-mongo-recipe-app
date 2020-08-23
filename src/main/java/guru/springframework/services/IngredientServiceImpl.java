@@ -104,6 +104,6 @@ public class IngredientServiceImpl implements IngredientService {
  
     recipe.getIngredients().remove(ingredient);
     
-    recipeRepository.save(recipe);    
+    recipeRepository.save(recipe).block();    
   }
 }

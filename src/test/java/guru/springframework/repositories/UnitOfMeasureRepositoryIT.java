@@ -29,7 +29,7 @@ public class UnitOfMeasureRepositoryIT {
   RecipeReactiveRepository recipeRepository;
   
   @Before
-  public void setUp() throws Exception{
+  public void setUp() throws Exception {
     
     unitOfMeasureRepository.deleteAll();
     categoryRepository.deleteAll();

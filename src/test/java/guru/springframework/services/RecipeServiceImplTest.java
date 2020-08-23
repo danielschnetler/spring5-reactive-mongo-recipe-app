@@ -11,7 +11,6 @@ import static org.mockito.Mockito.when;
 import guru.springframework.converters.RecipeCommandToRecipe;
 import guru.springframework.converters.RecipeToRecipeCommand;
 import guru.springframework.domain.Recipe;
-import guru.springframework.exceptions.NotFoundException;
 import guru.springframework.repositories.reactive.RecipeReactiveRepository;
 import java.util.List;
 import org.junit.Before;
@@ -47,11 +46,10 @@ public class RecipeServiceImplTest {
   public void getRecipeByIdTest() {
     Recipe recipe = new Recipe();
     recipe.setId("1");
-    Mono<Recipe> monoRecipe = Mono.just(recipe);
 
-    when(recipeRepository.findById(anyString())).thenReturn(monoRecipe);
+    when(recipeRepository.findById(anyString())).thenReturn(Mono.just(recipe));
 
-    Recipe returnedRecipe = recipeService.findById("1");
+    Recipe returnedRecipe = recipeService.findById("1").block();
 
     assertNotNull(returnedRecipe);
     verify(recipeRepository, times(1)).findById(anyString());
@@ -63,13 +61,11 @@ public class RecipeServiceImplTest {
     return null;
   }
 
-  @Test(expected = NotFoundException.class)
-  public void getRecipeByIdTestNotFount() {
+  @Test  public void getRecipeByIdTestNotFount() {
     
-    Mono<Recipe> monoRecipe = Mono.empty();
+    when(recipeRepository.findById(anyString())).thenReturn(Mono.empty());
     
-    when(recipeRepository.findById(anyString())).thenReturn(monoRecipe);
-    Recipe recipeReturned =  recipeService.findById("1");
+    Recipe recipeReturned =  recipeService.findById("1").block();
     
     //Then
     assertNull(recipeReturned);
@@ -77,11 +73,8 @@ public class RecipeServiceImplTest {
   
   @Test
   public void testGetRecipes() {
-    
-    Recipe recipe = new Recipe();
-    Flux<Recipe> recipesData = Flux.just(recipe);
-        
-    when(recipeRepository.findAll()).thenReturn(recipesData);
+            
+    when(recipeRepository.findAll()).thenReturn(Flux.just(new Recipe()));
     
     List<Recipe> recipes = recipeService.getRecipes().collectList().block();
     

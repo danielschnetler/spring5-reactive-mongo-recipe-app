@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 @Slf4j
 @Service
@@ -34,8 +35,8 @@ public class RecipeServiceImpl implements RecipeService {
   }
     
   @Override
-  public Recipe findById(String id) {
-    return recipeRepository.findById(id).block();
+  public Mono<Recipe> findById(String id) {
+    return recipeRepository.findById(id);
   }
   
   @Override
@@ -49,7 +50,7 @@ public class RecipeServiceImpl implements RecipeService {
   
   @Override
   public RecipeCommand findCommandById(String id) {
-    return recipeToRecipeCommand.convert(findById(id));
+    return recipeToRecipeCommand.convert(recipeRepository.findById(id).block());
   }
   
   @Override
