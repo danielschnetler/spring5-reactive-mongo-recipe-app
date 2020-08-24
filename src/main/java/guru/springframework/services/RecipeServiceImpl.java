@@ -7,7 +7,6 @@ import guru.springframework.domain.Recipe;
 import guru.springframework.repositories.reactive.RecipeReactiveRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -36,26 +35,32 @@ public class RecipeServiceImpl implements RecipeService {
     
   @Override
   public Mono<Recipe> findById(String id) {
+    log.debug("I'm in the service -  Find Recipy by ID");
     return recipeRepository.findById(id);
   }
   
   @Override
-  @Transactional
-  public RecipeCommand saveRecipeCommand(RecipeCommand command) {
-    Recipe detatchedRecipe = recipeCommandToRecipe.convert(command);
-    Recipe savedRecipe = recipeRepository.save(detatchedRecipe).block();
-    log.debug("Saved RecipeId: " + savedRecipe.getId());
-    return recipeToRecipeCommand.convert(savedRecipe);
+  public Mono<RecipeCommand> saveRecipeCommand(RecipeCommand command) {
+    log.debug("Saving RecipeId: " + command.getId());
+    return recipeRepository.save(recipeCommandToRecipe.convert(command))
+        .map(recipeToRecipeCommand::convert);    
   }
   
   @Override
-  public RecipeCommand findCommandById(String id) {
-    return recipeToRecipeCommand.convert(recipeRepository.findById(id).block());
+  public Mono<RecipeCommand> findCommandById(String id) {
+    return recipeRepository.findById(id)
+        .map(recipe -> {
+          RecipeCommand command = recipeToRecipeCommand.convert(recipe);
+          command.getIngredients().forEach(rc -> 
+              rc.setRecipeId(command.getId()));
+          return command;
+        });
   }
   
   @Override
-  public void deleteById(String id) {
+  public Mono<Void> deleteById(String id) {
     recipeRepository.deleteById(id).block();
+    return Mono.empty();
   }
   
 }

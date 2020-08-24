@@ -9,47 +9,60 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import guru.springframework.commands.IngredientCommand;
+import guru.springframework.commands.UnitOfMeasureCommand;
 import guru.springframework.converters.IngredientCommandToIngredient;
 import guru.springframework.converters.IngredientToIngredientCommand;
 import guru.springframework.converters.UnitOfMeasureCommandToUnitOfMeasure;
 import guru.springframework.converters.UnitOfMeasureToUnitOfMeasureCommand;
 import guru.springframework.domain.Ingredient;
 import guru.springframework.domain.Recipe;
+import guru.springframework.domain.UnitOfMeasure;
 import guru.springframework.repositories.reactive.IngredientReactiveRepository;
 import guru.springframework.repositories.reactive.RecipeReactiveRepository;
 import guru.springframework.repositories.reactive.UnitOfMeasureReactiveRepository;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import reactor.core.publisher.Mono;
 
 public class IngredientServiceImplTest {
-  
+
   IngredientServiceImpl ingredientService;
   private final IngredientToIngredientCommand ingredientToIngredientCommand;
+  private final UnitOfMeasureCommandToUnitOfMeasure unitOfMeasureCommandToUnitOfMeasure;
+  private final IngredientCommandToIngredient ingredientCommandToIngredient;
+ 
   @Mock
   RecipeReactiveRepository recipeRepository;
 
   @Mock
-  UnitOfMeasureReactiveRepository unitOfMeasureRepository;
-
-  @Mock
   IngredientReactiveRepository ingredientRepository;
 
+  @Mock
+  UnitOfMeasureReactiveRepository unitOfMeasureRepository;
+
   public IngredientServiceImplTest() {
-    this.ingredientToIngredientCommand = new IngredientToIngredientCommand(
-        new UnitOfMeasureToUnitOfMeasureCommand());
-    new IngredientCommandToIngredient(new UnitOfMeasureCommandToUnitOfMeasure());
-    
+    this.ingredientToIngredientCommand = 
+        new IngredientToIngredientCommand(new UnitOfMeasureToUnitOfMeasureCommand());
+    this.unitOfMeasureCommandToUnitOfMeasure = new UnitOfMeasureCommandToUnitOfMeasure();
+    this.ingredientCommandToIngredient = 
+        new IngredientCommandToIngredient(this.unitOfMeasureCommandToUnitOfMeasure);
   }
-  
+
   @Before
   public void setUp() throws Exception {
-    MockitoAnnotations.initMocks(this);
-    
+    MockitoAnnotations.initMocks(this);    
     ingredientService = new IngredientServiceImpl(recipeRepository, 
-        unitOfMeasureRepository, ingredientToIngredientCommand);
+        ingredientToIngredientCommand, unitOfMeasureRepository);
+  }
+
+  @Test @Ignore public void testSaveRecipeCommand() throws Exception {
+    //Todo
+  }
+  @Test @Ignore public void testDeleteById() throws Exception {
+    //todo
   }
   
   @Test
@@ -71,39 +84,48 @@ public class IngredientServiceImplTest {
     recipe.addIngredient(ingredient2);
     recipe.addIngredient(ingredient3);
     
-    Mono<Recipe> monoRecipe = Mono.just(recipe);
-    
-    when(recipeRepository.findById(anyString())).thenReturn(monoRecipe);
+    when(recipeRepository.findById(anyString())).thenReturn(Mono.just(recipe));
     
     // When
-    IngredientCommand ingredientCommand = ingredientService.findByRecipeIdAndIngredientId("1", "3");
+    IngredientCommand ingredientCommand =
+          ingredientService.findByRecipeIdAndIngredientId("1", "3").block();
     
     assertNotNull(ingredientCommand);
     assertEquals("3", ingredientCommand.getId());
-    //assertEquals("1", ingredientCommand.getRecipeId());
+    assertEquals("1", ingredientCommand.getRecipeId());
     verify(recipeRepository, times(1)).findById(anyString());
   }
   
   @Test
   public void testSaveExistingIngredient() {
     // Given
+    UnitOfMeasureCommand unitOfMeasureCommand = new UnitOfMeasureCommand();
+    unitOfMeasureCommand.setDescription("Kilogram");
+    unitOfMeasureCommand.setId("1");
+    
     IngredientCommand ingredientCommand = new IngredientCommand();
     ingredientCommand.setId("3");
     ingredientCommand.setRecipeId("2");
-    
+    ingredientCommand.setUom(unitOfMeasureCommand);
+
+    Ingredient ingredient = ingredientCommandToIngredient.convert(ingredientCommand);
     
     Recipe savedRecipe = new Recipe();
     savedRecipe.setId("2");
-    savedRecipe.addIngredient(new Ingredient());
-    savedRecipe.getIngredients().iterator().next().setId("3");
+    savedRecipe.addIngredient(ingredient);
 
-    Mono<Recipe> savedMonoRecipe = Mono.just(savedRecipe);
-    Mono<Recipe> monoRecipe = Mono.just(new Recipe());
-    when(recipeRepository.findById(anyString())).thenReturn(monoRecipe);
-    when(recipeRepository.save(any())).thenReturn(savedMonoRecipe);
+    when(recipeRepository.findById(anyString())).thenReturn(Mono.just(savedRecipe));
+    when(recipeRepository.save(any())).thenReturn(Mono.just(savedRecipe));
+   
+    UnitOfMeasure unitOfMeasure = 
+        unitOfMeasureCommandToUnitOfMeasure.convert(unitOfMeasureCommand);
+
+    when(unitOfMeasureRepository.findById(anyString()))
+        .thenReturn(Mono.just(unitOfMeasure));
     
     // When
-    IngredientCommand savedCommand = ingredientService.saveIngredientCommand(ingredientCommand);
+    IngredientCommand savedCommand =
+        ingredientService.saveIngredientCommand(ingredientCommand).block();
     
     // Then
     assertNotNull(savedCommand);
@@ -129,6 +151,7 @@ public class IngredientServiceImplTest {
     recipe.addIngredient(ingredient);
     
     when(recipeRepository.findById(anyString())).thenReturn(Mono.just(recipe));
+    when(recipeRepository.save(any(Recipe.class))).thenReturn(Mono.empty());
     
     // When
     ingredientService.deleteByRecipeIdAndIngredientId(recipeId, ingredientId);

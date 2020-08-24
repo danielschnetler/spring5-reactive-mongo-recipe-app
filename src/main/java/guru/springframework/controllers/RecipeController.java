@@ -1,7 +1,6 @@
 package guru.springframework.controllers;
 
 import guru.springframework.commands.RecipeCommand;
-import guru.springframework.domain.Recipe;
 import guru.springframework.exceptions.NotFoundException;
 import guru.springframework.services.RecipeService;
 import javax.validation.Valid;
@@ -33,8 +32,8 @@ public class RecipeController {
 
   @GetMapping("/recipe/{id}/show")
   public String showById(@PathVariable final String id, final Model model) {
-    Recipe foundRecipe = recipeService.findById(id).block();
-    model.addAttribute("recipe", foundRecipe);
+    
+    model.addAttribute("recipe", recipeService.findById(id).block());
 
     return "recipe/show";
   }
@@ -48,7 +47,7 @@ public class RecipeController {
 
   @GetMapping("/recipe/{id}/update")
   public String updateRecipe(@PathVariable final String id, final Model model) {
-    model.addAttribute("recipe", recipeService.findCommandById(id));
+    model.addAttribute("recipe", recipeService.findCommandById(id).block());
 
     return RECIPE_RECIPEFORM_URL;
   }
@@ -60,7 +59,7 @@ public class RecipeController {
       bindingResult.getAllErrors().forEach(objectError -> log.debug(objectError.toString()));
       return RECIPE_RECIPEFORM_URL;
     }
-    final RecipeCommand savedCommand = recipeService.saveRecipeCommand(command);
+    final RecipeCommand savedCommand = recipeService.saveRecipeCommand(command).block();
 
     return "redirect:/recipe/" + savedCommand.getId() + "/show";
   }
@@ -68,7 +67,7 @@ public class RecipeController {
   @GetMapping("/recipe/{id}/delete")
   public String deleteRecipe(@PathVariable final String id) {
     log.debug("Deleting Recipe" + id);
-    recipeService.deleteById(id);
+    recipeService.deleteById(id).block();
 
     return "redirect:/";
   }

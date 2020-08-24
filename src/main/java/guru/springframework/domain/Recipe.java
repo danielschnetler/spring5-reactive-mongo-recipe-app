@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Getter
@@ -24,8 +23,6 @@ public class Recipe {
   private List<Ingredient> ingredients = new ArrayList<>();
   private Byte[] image;
   private Notes notes;
-  
-  @DBRef
   private List<Category> categories = new ArrayList<>();
 
   public Recipe addIngredient(Ingredient ingredient) {

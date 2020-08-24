@@ -38,7 +38,7 @@ public class IngredientController {
   public String listIngredients(@PathVariable String id, Model model) {
     log.debug("Listing ingredients for recipe " + id);
     
-    model.addAttribute("recipe", recipeService.findCommandById(id));
+    model.addAttribute("recipe", recipeService.findCommandById(id).block());
     
     return "recipe/ingredient/list";
   }
@@ -48,7 +48,7 @@ public class IngredientController {
       @PathVariable String recipeId, @PathVariable String ingredientId) {
     
     model.addAttribute(INGREDIENT, 
-        ingredientService.findByRecipeIdAndIngredientId(recipeId, ingredientId));
+        ingredientService.findByRecipeIdAndIngredientId(recipeId, ingredientId).block());
     
     return "recipe/ingredient/show";
   }
@@ -57,7 +57,7 @@ public class IngredientController {
   public String updateRecipeIngredient(Model model, @PathVariable String recipeId,
       @PathVariable String ingredientId) {
     model.addAttribute(INGREDIENT,
-        ingredientService.findByRecipeIdAndIngredientId(recipeId, ingredientId));
+        ingredientService.findByRecipeIdAndIngredientId(recipeId, ingredientId).block());
     model.addAttribute("uomList", unitOfMeasureService.findAll().collectList().block());
     
     return "/recipe/ingredient/ingredientform";
@@ -66,7 +66,7 @@ public class IngredientController {
   @GetMapping("/recipe/{recipeId}/ingredient/new")
   public String newRecipe(Model model, @PathVariable String recipeId) {
     
-    RecipeCommand command = recipeService.findCommandById(recipeId);
+    RecipeCommand command = recipeService.findCommandById(recipeId).block();
     //todo Raise exception if null
     
     IngredientCommand ingredientCommand = new IngredientCommand();
@@ -81,7 +81,7 @@ public class IngredientController {
   
   @PostMapping("/recipe/{recipeId}/ingredient")
   public String saveCommand(@ModelAttribute IngredientCommand command) {
-    IngredientCommand savedCommand = ingredientService.saveIngredientCommand(command);
+    IngredientCommand savedCommand = ingredientService.saveIngredientCommand(command).block();
     
     log.debug("Saved Recipe " + savedCommand.getRecipeId());
     log.debug("Saved Ingredient " + savedCommand.getId());

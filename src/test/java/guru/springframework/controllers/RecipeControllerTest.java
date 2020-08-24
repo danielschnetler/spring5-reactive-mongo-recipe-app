@@ -10,7 +10,6 @@ import guru.springframework.domain.Recipe;
 import guru.springframework.exceptions.NotFoundException;
 import guru.springframework.services.RecipeService;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -63,15 +62,6 @@ public class RecipeControllerTest {
   }
   
   @Test
-  @Ignore
-  public void testGetRecipeNumberFormatException() throws Exception {
-    
-    mockMvc.perform(get("/recipe/asdf/show"))
-        .andExpect(status().isBadRequest())
-        .andExpect(view().name("400error"));
-  }
-  
-  @Test
   public void testGetNewRecipeForm() throws Exception {
     mockMvc.perform(get("/recipe/new"))
         .andExpect(status().isOk())
@@ -84,7 +74,7 @@ public class RecipeControllerTest {
     RecipeCommand command = new RecipeCommand();
     command.setId("2");
     
-    when(recipeService.saveRecipeCommand(any())).thenReturn(command);
+    when(recipeService.saveRecipeCommand(any())).thenReturn(Mono.just(command));
     
     mockMvc.perform(post("/recipe").contentType(MediaType.APPLICATION_FORM_URLENCODED)
         .param("id", "")
@@ -99,7 +89,7 @@ public class RecipeControllerTest {
     RecipeCommand command = new RecipeCommand();
     command.setId("2");
     
-    when(recipeService.saveRecipeCommand(any())).thenReturn(command);
+    when(recipeService.saveRecipeCommand(any())).thenReturn(Mono.just(command));
     
     mockMvc.perform(post("/recipe").contentType(MediaType.APPLICATION_FORM_URLENCODED)
         .param("id", ""))
@@ -113,7 +103,7 @@ public class RecipeControllerTest {
     RecipeCommand command = new RecipeCommand();
     command.setId("2");
     
-    when(recipeService.findCommandById(anyString())).thenReturn(command);
+    when(recipeService.findCommandById(anyString())).thenReturn(Mono.just(command));
     
     mockMvc.perform(get("/recipe/2/update"))
         .andExpect(status().isOk())
@@ -123,6 +113,8 @@ public class RecipeControllerTest {
   
   @Test
   public void testDeleteRecipe() throws Exception {
+    when(recipeService.deleteById(anyString())).thenReturn(Mono.empty());
+
     mockMvc.perform(get("/recipe/1/delete"))
         .andExpect(status().is3xxRedirection())
         .andExpect(view().name("redirect:/"));

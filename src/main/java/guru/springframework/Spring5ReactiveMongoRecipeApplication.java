@@ -6,10 +6,10 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
 @Slf4j
-public class Spring5MongoRecipeAppApplication {
+public class Spring5ReactiveMongoRecipeApplication {
   
   public static void main(String[] args) {
-    SpringApplication.run(Spring5MongoRecipeAppApplication.class, args);
+    SpringApplication.run(Spring5ReactiveMongoRecipeApplication.class, args);
     log.debug("Project started");
   }
   

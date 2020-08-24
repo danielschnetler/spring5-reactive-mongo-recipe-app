@@ -1,6 +1,7 @@
 package guru.springframework.services;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -43,11 +44,12 @@ public class ImageServiceImplTest {
     recipe.setId(id);
     
     when(recipeRepository.findById(anyString())).thenReturn(Mono.just(recipe));
+    when(recipeRepository.save(any(Recipe.class))).thenReturn(Mono.just(recipe));
     
     ArgumentCaptor<Recipe> argumentCaptor = ArgumentCaptor.forClass(Recipe.class);
     
     //When
-    imageService.saveImageFile(id, multipartFile);
+    imageService.saveImageFile(id, multipartFile).block();
     
     //Then
     verify(recipeRepository, times(1)).save(argumentCaptor.capture());

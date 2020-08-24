@@ -25,6 +25,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 public class IngredientControllerTest {
   
@@ -53,7 +54,7 @@ public class IngredientControllerTest {
   public void testListingIngredients() throws Exception {
     //Given
     RecipeCommand command = new RecipeCommand();
-    when(recipeService.findCommandById(anyString())).thenReturn(command);
+    when(recipeService.findCommandById(anyString())).thenReturn(Mono.just(command));
     
     //When
     mockMvc.perform(get("/recipe/1/ingredients"))
@@ -72,7 +73,7 @@ public class IngredientControllerTest {
     
     //When
     when(ingredientService.findByRecipeIdAndIngredientId(anyString(), anyString()))
-        .thenReturn(command);
+        .thenReturn(Mono.just(command));
     
     //Then
     mockMvc.perform(get("/recipe/1/ingredient/2/show"))
@@ -88,7 +89,7 @@ public class IngredientControllerTest {
     command.setId("1");
     
     //When
-    when(recipeService.findCommandById(anyString())).thenReturn(command);
+    when(recipeService.findCommandById(anyString())).thenReturn(Mono.just(command));
     when(unitOfMeasureService.findAll()).thenReturn(Flux.just(new UnitOfMeasureCommand()));
     
     //Then
@@ -108,7 +109,7 @@ public class IngredientControllerTest {
     
     //when
     when(ingredientService.findByRecipeIdAndIngredientId(anyString(), anyString()))
-        .thenReturn(command);
+        .thenReturn(Mono.just(command));
     when(unitOfMeasureService.findAll()).thenReturn(Flux.just(new UnitOfMeasureCommand()));
     
     //then
@@ -127,7 +128,7 @@ public class IngredientControllerTest {
     command.setRecipeId("2");
     
     //When
-    when(ingredientService.saveIngredientCommand(any())).thenReturn(command);
+    when(ingredientService.saveIngredientCommand(any())).thenReturn(Mono.just(command));
     
     //Then
     mockMvc.perform(post("/recipe/2/ingredient")

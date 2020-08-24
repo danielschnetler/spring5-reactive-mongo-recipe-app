@@ -11,10 +11,10 @@ public interface RecipeService {
   
   Mono<Recipe> findById(String id);
   
-  RecipeCommand saveRecipeCommand(RecipeCommand command);
+  Mono<RecipeCommand> saveRecipeCommand(RecipeCommand command);
   
-  RecipeCommand findCommandById(String id);
+  Mono<RecipeCommand> findCommandById(String id);
   
-  void deleteById(String id);
+  Mono<Void> deleteById(String id);
   
 }
