@@ -20,49 +20,53 @@ import org.springframework.web.multipart.MultipartFile;
 @Slf4j
 @Controller
 public class ImageController {
-	
-	private final RecipeService recipeService;
-	private final ImageService imageService;
-	
-	public ImageController(RecipeService recipeService, ImageService imageService) {
-		super();
-		this.recipeService = recipeService;
-		this.imageService = imageService;
-	}
-
-	@GetMapping("/recipe/{recipeId}/image")
-	public String getImageForm(@PathVariable String recipeId, Model model) {
-		
-		model.addAttribute("recipe", recipeService.findCommandById(recipeId));
-		
-		return "/recipe/imageuploadform";
-	}
-	
-	@PostMapping("/recipe/{recipeId}/image")
-	public String setImage(@PathVariable String recipeId, @RequestParam("imagefile") MultipartFile file) {
-		
-		imageService.saveImageFile(recipeId, file);
-		
-		return "redirect:/recipe/" + recipeId + "/show";
-	}
-	
-	@GetMapping("recipe/{id}/recipeimage")
-	public void renderImageFromDB(@PathVariable String id, HttpServletResponse response) throws IOException {
-		RecipeCommand recipeCommand = recipeService.findCommandById(id);
-		
-		if(recipeCommand.getImage() != null){
-		byte[] byteArray = new byte[recipeCommand.getImage().length];
-		
-		int i = 0;
-		
-		for(Byte wrappedByte : recipeCommand.getImage()) {
-			byteArray[i++] = wrappedByte; //unboxing
-		}
-		
-		response.setContentType("image/jpeg");
-		InputStream is = new ByteArrayInputStream(byteArray);
-		IOUtils.copy(is, response.getOutputStream());
-	}
-	}
-
+  
+  private final RecipeService recipeService;
+  private final ImageService imageService;
+  
+  public ImageController(RecipeService recipeService, ImageService imageService) {
+    super();
+    this.recipeService = recipeService;
+    this.imageService = imageService;
+  }
+  
+  @GetMapping("/recipe/{recipeId}/image")
+  public String getImageForm(@PathVariable String recipeId, Model model) {
+    
+    model.addAttribute("recipe", recipeService.findCommandById(recipeId).block());
+    log.debug("Get image form");
+    return "/recipe/imageuploadform";
+  }
+  
+  @PostMapping("/recipe/{recipeId}/image")
+  public String setImage(@PathVariable String recipeId, 
+      @RequestParam("imagefile") MultipartFile file) {
+    
+    imageService.saveImageFile(recipeId, file).block();
+    log.debug("Set Image");
+    
+    return "redirect:/recipe/" + recipeId + "/show";
+  }
+  
+  @GetMapping("recipe/{id}/recipeimage")
+  public void renderImageFromDB(@PathVariable String id, 
+      HttpServletResponse response) throws IOException {
+    RecipeCommand recipeCommand = recipeService.findCommandById(id).block();
+    log.debug("Get image from DB");
+    
+    if (recipeCommand.getImage() != null) {
+      byte[] byteArray = new byte[recipeCommand.getImage().length];
+      
+      int i = 0;
+      
+      for (Byte wrappedByte : recipeCommand.getImage()) {
+        byteArray[i++] = wrappedByte; //unboxing
+      }
+      
+      response.setContentType("image/jpeg");
+      InputStream is = new ByteArrayInputStream(byteArray);
+      IOUtils.copy(is, response.getOutputStream());
+    }
+  }
+  
 }

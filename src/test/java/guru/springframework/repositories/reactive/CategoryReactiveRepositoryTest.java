@@ -21,7 +21,7 @@ public class CategoryReactiveRepositoryTest {
   CategoryReactiveRepository categoryReactiveRepository;
 
   @Before public void setUp() {
-    categoryReactiveRepository.deleteAll();
+    categoryReactiveRepository.deleteAll().block();
   }
 
   @Test public void testSaveCategory() {
@@ -32,7 +32,7 @@ public class CategoryReactiveRepositoryTest {
     Mono<Category> savedCategory = categoryReactiveRepository.save(newCategory);
 
     assertEquals(newCategory.getDescription(), savedCategory.block().getDescription());
-    assertEquals(1, categoryReactiveRepository.findAll().count().block().intValue());
+    assertEquals(Long.valueOf(1), categoryReactiveRepository.findAll().count().block());
   }
 
   @Test public void testFindByDescription() {

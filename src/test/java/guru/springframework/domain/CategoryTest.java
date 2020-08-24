@@ -6,29 +6,29 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class CategoryTest {
-	
-	Category category;
-	
-	@Before
-	public void setUp() {
-		category = new Category();
-	}
-
-	@Test
-	public void testGetId() {
-		String idValue = "4";
-		category.setId(idValue);
-		assertEquals(idValue, category.getId());
-	}
-
-	@Test
-	public void testGetDescription() {
-		//fail("Not yet implemented");
-	}
-
-	@Test
-	public void testGetRecipies() {
-		//fail("Not yet implemented");
-	}
-
+  
+  Category category;
+  
+  @Before
+  public void setUp() {
+    category = new Category();
+  }
+  
+  @Test
+  public void testGetId() {
+    String idValue = "4";
+    category.setId(idValue);
+    assertEquals(idValue, category.getId());
+  }
+  
+  @Test
+  public void testGetDescription() {
+    //fail("Not yet implemented");
+  }
+  
+  @Test
+  public void testGetRecipies() {
+    //fail("Not yet implemented");
+  }
+  
 }
