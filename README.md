@@ -1,3 +1,3 @@
-# spring5-reactove-mongo-recipe-app
+# spring5-reactive-mongo-recipe-app
 
 
