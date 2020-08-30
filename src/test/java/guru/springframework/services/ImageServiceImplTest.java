@@ -37,11 +37,12 @@ public class ImageServiceImplTest {
   public void test() throws IOException {
     // Given
     String id = "1";
-    MultipartFile multipartFile = new MockMultipartFile("imagefile", "testing.txt", "text/plain",
-        "Spring Framework Guru".getBytes());
     
     Recipe recipe = new Recipe();
     recipe.setId(id);
+    
+    MultipartFile multipartFile = new MockMultipartFile("imagefile", "testing.txt", "text/plain",
+        "Spring Framework Guru".getBytes());
     
     when(recipeRepository.findById(anyString())).thenReturn(Mono.just(recipe));
     when(recipeRepository.save(any(Recipe.class))).thenReturn(Mono.just(recipe));
