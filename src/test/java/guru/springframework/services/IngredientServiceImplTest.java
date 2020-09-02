@@ -33,6 +33,7 @@ public class IngredientServiceImplTest {
   private final IngredientToIngredientCommand ingredientToIngredientCommand;
   private final UnitOfMeasureCommandToUnitOfMeasure unitOfMeasureCommandToUnitOfMeasure;
   private final IngredientCommandToIngredient ingredientCommandToIngredient;
+  private final UnitOfMeasureToUnitOfMeasureCommand unitOfMeasureToUnitOfMeasureCommand;
  
   @Mock
   RecipeReactiveRepository recipeRepository;
@@ -44,9 +45,10 @@ public class IngredientServiceImplTest {
   UnitOfMeasureReactiveRepository unitOfMeasureRepository;
 
   public IngredientServiceImplTest() {
+    this.unitOfMeasureCommandToUnitOfMeasure = new UnitOfMeasureCommandToUnitOfMeasure();    
+    this.unitOfMeasureToUnitOfMeasureCommand = new UnitOfMeasureToUnitOfMeasureCommand();
     this.ingredientToIngredientCommand = 
-        new IngredientToIngredientCommand(new UnitOfMeasureToUnitOfMeasureCommand());
-    this.unitOfMeasureCommandToUnitOfMeasure = new UnitOfMeasureCommandToUnitOfMeasure();
+        new IngredientToIngredientCommand(unitOfMeasureToUnitOfMeasureCommand);
     this.ingredientCommandToIngredient = 
         new IngredientCommandToIngredient(this.unitOfMeasureCommandToUnitOfMeasure);
   }
@@ -55,7 +57,8 @@ public class IngredientServiceImplTest {
   public void setUp() throws Exception {
     MockitoAnnotations.initMocks(this);    
     ingredientService = new IngredientServiceImpl(recipeRepository, 
-        ingredientToIngredientCommand, unitOfMeasureRepository);
+        ingredientToIngredientCommand, unitOfMeasureRepository, 
+        ingredientCommandToIngredient);
   }
 
   @Test @Ignore public void testSaveRecipeCommand() throws Exception {

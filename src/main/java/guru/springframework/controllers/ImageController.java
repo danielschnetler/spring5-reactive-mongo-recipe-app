@@ -6,9 +6,7 @@ import guru.springframework.services.RecipeService;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import javax.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -48,7 +46,7 @@ public class ImageController {
     return "redirect:/recipe/" + recipeId + "/show";
   }
   
-  @GetMapping("recipe/{id}/recipeimage")
+  /*@GetMapping("recipe/{id}/recipeimage")
   public void renderImageFromDB(@PathVariable String id, 
       HttpServletResponse response) throws IOException {
     RecipeCommand recipeCommand = recipeService.findCommandById(id).block();
@@ -67,6 +65,6 @@ public class ImageController {
       InputStream is = new ByteArrayInputStream(byteArray);
       IOUtils.copy(is, response.getOutputStream());
     }
-  }
+  }*/
   
 }
